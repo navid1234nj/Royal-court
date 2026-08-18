@@ -1,0 +1,1310 @@
+<!doctype html>
+<html lang="fa" dir="rtl" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ config.site_title_fa }} | Royal Court</title>
+    <!-- Vazirmatn Persian Font -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css"
+    />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              clay: {
+                50: "#fff7ed",
+                100: "#ffedd5",
+                500: "#ea580c",
+                600: "#c2410c",
+                700: "#9a3412",
+              },
+              court: {
+                50: "#f0fdf4",
+                100: "#dcfce7",
+                800: "#166534",
+                900: "#14532d",
+                950: "#0f382c",
+              },
+            },
+            fontFamily: {
+              sans: ["Vazirmatn", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Three.js & GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+      body {
+        font-family: "Vazirmatn", sans-serif;
+        transition:
+          background-color 0.3s,
+          color 0.3s;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.6);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #ea580c;
+        border-radius: 4px;
+      }
+      .clay-gradient {
+        background: linear-gradient(135deg, #ea580c 0%, #9a3412 100%);
+      }
+      .court-gradient {
+        background: linear-gradient(135deg, #0f382c 0%, #14532d 100%);
+      }
+      /* Intro Canvas */
+      #intro-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 99999;
+        background: #0a0f0d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        transition:
+          opacity 0.8s ease-out,
+          visibility 0.8s;
+      }
+      #intro-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .glow-effect {
+        box-shadow: 0 0 25px rgba(234, 88, 12, 0.35);
+      }
+      .court-glow {
+        box-shadow: 0 0 30px rgba(22, 101, 52, 0.4);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-orange-500 selection:text-white transition-colors duration-300"
+  >
+    <!-- 3D TENNIS BALL INTRO OVERLAY -->
+    <div id="intro-overlay">
+      <canvas id="intro-canvas"></canvas>
+      <div class="relative z-10 text-center px-4">
+        <div
+          class="inline-flex items-center justify-center p-4 bg-orange-600/20 rounded-full border border-orange-500/30 mb-4 animate-bounce"
+        >
+          <i data-lucide="trophy" class="w-10 h-10 text-orange-500"></i>
+        </div>
+        <h1
+          class="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-2"
+        >
+          ROYAL <span class="text-orange-500">COURT</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-300 font-light tracking-wide">
+          مجموعه و آکادمی تنیس خاکی رویال کورت
+        </p>
+        <div class="mt-8 flex items-center justify-center gap-3">
+          <div class="w-3 h-3 bg-orange-500 rounded-full animate-ping"></div>
+          <span class="text-sm text-slate-400 font-mono"
+            >در حال آماده‌سازی زمین...</span
+          >
+        </div>
+        <button
+          onclick="skipIntro()"
+          class="mt-8 px-6 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-full text-xs transition border border-slate-700"
+        >
+          ورود مستقیم به وبسایت
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN NAVBAR -->
+    <header
+      class="sticky top-0 z-40 backdrop-blur-md bg-slate-900/80 dark:bg-slate-950/85 border-b border-slate-800/80 transition-colors"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+          <!-- Logo & Title -->
+          <a href="#" class="flex items-center gap-3 group">
+            <div
+              class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition"
+            >
+              <i data-lucide="circle-dot" class="w-7 h-7 text-white"></i>
+            </div>
+            <div>
+              <div
+                class="text-xl font-black tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5"
+              >
+                ROYAL <span class="text-orange-500">COURT</span>
+              </div>
+              <div
+                class="text-xs text-emerald-600 dark:text-emerald-400 font-medium"
+              >
+                مجموعه تنیس خاکی
+              </div>
+            </div>
+          </a>
+
+          <!-- Desktop Nav Links -->
+          <nav
+            class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300"
+          >
+            <a href="#hero" class="hover:text-orange-500 transition"
+              >صفحه اصلی</a
+            >
+            <a
+              href="#schedule"
+              class="hover:text-orange-500 transition flex items-center gap-1.5 text-orange-400 font-bold"
+            >
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+              رزرو آنلاین سانس
+            </a>
+            <a href="#classes" class="hover:text-orange-500 transition"
+              >کلاس‌های آموزشی</a
+            >
+            <a href="#gallery" class="hover:text-orange-500 transition"
+              >گالری تصاویر</a
+            >
+            <a href="#about" class="hover:text-orange-500 transition"
+              >درباره ما</a
+            >
+          </nav>
+
+          <!-- Action Controls -->
+          <div class="flex items-center gap-3">
+            <!-- Intro Replay Button -->
+            <button
+              onclick="playIntroAnimation()"
+              title="نمایش مجدد انیمیشن توپ تنیس"
+              class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700/60 flex items-center gap-1.5 text-xs"
+            >
+              <i data-lucide="play-circle" class="w-4 h-4 text-orange-400"></i>
+              <span class="hidden sm:inline">انیمیشن</span>
+            </button>
+
+            <!-- Dark / Light Theme Toggle -->
+            <button
+              id="theme-toggle"
+              onclick="toggleTheme()"
+              class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700/60"
+              title="تغییر تم (دارک / لایت)"
+            >
+              <i
+                id="theme-icon-dark"
+                data-lucide="moon"
+                class="w-5 h-5 text-amber-400 hidden"
+              ></i>
+              <i
+                id="theme-icon-light"
+                data-lucide="sun"
+                class="w-5 h-5 text-orange-400"
+              ></i>
+            </button>
+
+            <!-- Admin Link -->
+            <a
+              href="/admin/"
+              target="_blank"
+              class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-orange-600/30 transition flex items-center gap-2"
+            >
+              <i data-lucide="shield" class="w-4 h-4"></i>
+              <span>پنل مدیریت</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
+
+    <!-- HERO SECTION -->
+    <section id="hero" class="relative overflow-hidden py-16 lg:py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-b border-slate-800/60">
+        <!-- Background Clay Court Glow Decor -->
+        <div class="absolute -top-40 right-1/4 w-96 h-96 bg-orange-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute top-1/2 left-10 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Text Content -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-right">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold">
+                        <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                        {{ config.site_name }} | زمین‌های استانداردهای بین‌المللی ITF
+                    </div>
+
+                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black leading-tight text-white tracking-tight">
+                        {{ config.hero_title }}
+                    </h1>
+
+                    <p class="text-base sm:text-lg text-slate-300 font-light leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                        {{ config.hero_subtitle }}
+                    </p>
+
+                    <!-- CTAs -->
+                    <div class="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                        <a href="#schedule" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold shadow-xl shadow-orange-600/25 transition transform hover:-translate-y-0.5 flex items-center gap-2 text-base">
+                            <i data-lucide="calendar" class="w-5 h-5"></i>
+                            رزرو فوری سانس‌های امروز
+                        </a>
+                        <a href="#classes" class="px-7 py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700 transition flex items-center gap-2 text-base">
+                            <i data-lucide="graduation-cap" class="w-5 h-5 text-orange-400"></i>
+                            ثبت‌نام کلاس آموزشی
+                        </a>
+                    </div>
+
+                    <!-- Highlights Stats -->
+                    <div class="pt-8 border-t border-slate-800/80 grid grid-cols-3 gap-4 text-center lg:text-right">
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-black text-orange-500">۲ زمین</div>
+                            <div class="text-xs text-slate-400 mt-1">خاکی سرخ بین‌المللی</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-black text-emerald-400">۲۴ / ۷</div>
+                            <div class="text-xs text-slate-400 mt-1">رزرو آنلاین آنی بدون ورود</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-black text-amber-400">VIP</div>
+                            <div class="text-xs text-slate-400 mt-1">نور شب، کلاب‌هاوس و پارک</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Graphic / Clay Court Card -->
+                <div class="lg:col-span-5 relative">
+                    <div class="relative rounded-3xl p-1 bg-gradient-to-br from-orange-500/30 via-slate-800 to-emerald-500/30 shadow-2xl overflow-hidden">
+                        <div class="bg-slate-900 rounded-[22px] p-6 space-y-6 relative overflow-hidden">
+                            <div class="absolute -right-12 -bottom-12 w-48 h-48 bg-orange-600/20 rounded-full blur-2xl"></div>
+                            
+                            <!-- Court Badge Header -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-orange-600/20 flex items-center justify-center text-orange-500">
+                                        <i data-lucide="trophy" class="w-6 h-6"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-white">زمین شماره ۱ (VIP)</div>
+                                        <div class="text-xs text-slate-400">آماده برای برگزاری مسابقات</div>
+                                    </div>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                    سانس‌ها فعال
+                                </span>
+                            </div>
+
+                            <!-- Tennis Court Schematic / Image Visual -->
+                            <div class="relative h-64 rounded-2xl bg-gradient-to-br from-court-950 to-slate-900 border border-emerald-600/30 flex items-center justify-center overflow-hidden group">
+                                <div class="absolute inset-0 bg-[radial-gradient(#ea580c_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
+                                
+                                <!-- Tennis Court Lines Graphic -->
+                                <div class="w-4/5 h-4/5 border-2 border-slate-300/40 relative rounded-lg flex items-center justify-center">
+                                    <div class="w-full h-0.5 bg-slate-300/40"></div>
+                                    <div class="absolute inset-y-0 left-1/2 w-0.5 bg-slate-300/40"></div>
+                                    <div class="w-10 h-10 rounded-full bg-orange-500 shadow-lg shadow-orange-500/50 flex items-center justify-center text-white font-bold group-hover:scale-125 transition duration-500">
+                                        <i data-lucide="circle-dot" class="w-6 h-6 animate-spin"></i>
+                                    </div>
+                                </div>
+
+                                <div class="absolute bottom-3 left-3 right-3 bg-slate-900/90 backdrop-blur p-3 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                                    <span class="text-slate-300">مدیریت مجموعه:</span>
+                                    <span class="font-bold text-orange-400">{{ config.manager_name }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Quick Notice -->
+                            <div class="p-3.5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs flex items-center gap-2">
+                                <i data-lucide="sparkles" class="w-4 h-4 shrink-0 text-orange-400"></i>
+                                <span>{{ config.price_notice_text }}</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SCHEDULE & RESERVATION SECTION -->
+    <section id="schedule" class="py-16 lg:py-24 bg-slate-900/60 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Section Title -->
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-3">
+                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                    برنامه زمانی و رزرو مستقیم
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                    تقویم سانس‌های آزاد و رزرو آنلاین
+                </h2>
+                <p class="text-slate-400 text-sm sm:text-base mt-2">
+                    روز و ساعت مورد نظر خود را انتخاب کرده و بدون نیاز به ورود، با وارد کردن نام و شماره تماس رزرو کنید.
+                </p>
+            </div>
+
+            <!-- PRICE & DISCOUNT BANNER ABOVE CALENDAR -->
+            <div class="mb-10 rounded-2xl bg-gradient-to-r from-orange-950/80 via-slate-900 to-emerald-950/80 border border-orange-500/30 p-6 shadow-xl relative overflow-hidden">
+                <div class="grid md:grid-cols-12 gap-6 items-center">
+                    <div class="md:col-span-8 space-y-2">
+                        <div class="flex items-center gap-2 text-orange-400 font-bold text-sm">
+                            <i data-lucide="tag" class="w-4 h-4"></i>
+                            اطلاعیه نرخ سانس‌ها و تخفیفات ویژه
+                        </div>
+                        <div class="text-slate-200 text-sm leading-relaxed">
+                            {{ config.price_notice_text }}
+                        </div>
+                    </div>
+                    <div class="md:col-span-4 flex items-center justify-start md:justify-end gap-4 border-t md:border-t-0 border-slate-800 pt-4 md:pt-0">
+                        <div class="text-right">
+                            <div class="text-xs text-slate-400">قیمت پایه هر سانس:</div>
+                            <div class="text-xl font-black text-white">
+                                {{ config.base_session_price }} <span class="text-xs text-slate-400 font-normal">تومان</span>
+                            </div>
+                        </div>
+                        <div class="px-3 py-1.5 rounded-xl bg-orange-600 text-white font-extrabold text-sm">
+                            تا {{ config.default_discount_percent }}٪ تخفیف
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTERS & CONTROLS -->
+            <div class="space-y-6 mb-8">
+                
+                <!-- Day / Date Tabs (Shamsi) -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none" id="date-tabs-container">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+
+                <!-- Court Filter Buttons -->
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-slate-400">فیلتر زمین:</span>
+                        <button onclick="filterByCourt('all')" id="court-btn-all" class="court-filter-btn px-4 py-2 rounded-xl text-xs font-bold transition bg-orange-600 text-white shadow">
+                            همه زمین‌ها
+                        </button>
+                        {% for court in courts %}
+                        <button onclick="filterByCourt('{{ court.id }}')" id="court-btn-{{ court.id }}" class="court-filter-btn px-4 py-2 rounded-xl text-xs font-semibold transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+                            {{ court.name }}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <div class="flex items-center gap-4 text-xs">
+                        <div class="flex items-center gap-1.5 text-emerald-400 font-medium">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>آزاد (قابل رزرو)</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-rose-400 font-medium">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                            <span>رزرو شده</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SLOTS GRID LIST -->
+            <div id="slots-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Slots populated dynamically via JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="no-slots-msg" class="hidden text-center py-12 bg-slate-950 rounded-2xl border border-slate-800">
+                <i data-lucide="calendar-x" class="w-12 h-12 text-slate-600 mx-auto mb-3"></i>
+                <p class="text-slate-400 font-medium">هیچ سانسی برای این روز یا فیلتر یافت نشد.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- TRAINING CLASSES & TUITION SECTION -->
+    <section id="classes" class="py-16 lg:py-24 bg-slate-950 border-t border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold mb-3">
+                    <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                    آکادمی تخصصی تنیس
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                    کلاس‌های آموزشی، آکادمی کودکان و شهریه
+                </h2>
+                <p class="text-slate-400 text-sm sm:text-base mt-2">
+                    زیر نظر مستقیم استاد {{ config.manager_name }} و سرمربیان رسمی فدراسیون تنیس جمهوری اسلامی ایران
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for tc in training_classes %}
+                <div class="rounded-3xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between hover:border-orange-500/40 transition duration-300 shadow-xl relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-orange-600/10 rounded-full blur-2xl group-hover:bg-orange-600/20 transition"></div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-xs font-bold">
+                                {{ tc.level }}
+                            </span>
+                            <span class="text-xs text-slate-400 flex items-center gap-1">
+                                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                                {{ tc.duration }}
+                            </span>
+                        </div>
+
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-orange-400 transition">
+                            {{ tc.title }}
+                        </h3>
+
+                        <div class="text-xs text-slate-300 mb-4 flex items-center gap-1.5">
+                            <i data-lucide="user-check" class="w-4 h-4 text-emerald-400"></i>
+                            <span>مدرس: {{ tc.coach_name }}</span>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 mb-6 text-xs text-slate-300">
+                            <span class="text-orange-400 font-semibold">برنامه‌زمانی:</span> {{ tc.schedule_info }}
+                        </div>
+
+                        <!-- Features -->
+                        <div class="space-y-2 mb-8">
+                            {% for feature in tc.features_list.splitlines %}
+                            {% if feature.strip %}
+                            <div class="flex items-start gap-2 text-xs text-slate-300">
+                                <i data-lucide="check-circle2" class="w-4 h-4 text-orange-500 shrink-0 mt-0.5"></i>
+                                <span>{{ feature.strip }}</span>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 flex items-center justify-between gap-4">
+                        <div>
+                            <div class="text-[10px] text-slate-400">شهریه کامل دوره:</div>
+                            <div class="text-lg font-black text-white">
+                                {{ tc.tuition }} <span class="text-xs text-slate-400 font-normal">تومان</span>
+                            </div>
+                        </div>
+                        <button onclick="openClassModal('{{ tc.id }}', '{{ tc.title }}', '{{ tc.tuition }}')" class="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold shadow-lg shadow-orange-600/25 transition">
+                            ثبت‌نام دوره
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-3 text-center py-8 text-slate-400">اطلاعات کلاس‌ها در حال به‌روزرسانی است.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- PHOTO GALLERY SECTION -->
+    <section id="gallery" class="py-16 lg:py-24 bg-slate-900/40 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-3">
+                    <i data-lucide="image" class="w-4 h-4"></i>
+                    تصاویر مجموعه
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                    گالری تصاویر و نمای زمین‌های خاکی
+                </h2>
+                <p class="text-slate-400 text-sm sm:text-base mt-2">
+                    نمای دید شبانه، فضا و کیفیت زمین‌های مدرن رویال کورت
+                </p>
+            </div>
+
+            <!-- Categories -->
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-10">
+                <button onclick="filterGallery('all')" class="gallery-cat-btn px-5 py-2 rounded-xl text-xs font-bold bg-orange-600 text-white transition shadow">
+                    همه تصاویر
+                </button>
+                {% for cat in gallery_categories %}
+                <button onclick="filterGallery('{{ cat.id }}')" class="gallery-cat-btn px-5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+                    {{ cat.title }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Gallery Grid -->
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for item in gallery_items %}
+                <div class="gallery-item rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 hover:border-orange-500/50 transition duration-300 group shadow-lg" data-category="{{ item.category.id }}">
+                    <div class="relative h-56 bg-slate-800 overflow-hidden flex items-center justify-center">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        {% else %}
+                        <div class="w-full h-full bg-gradient-to-br from-court-950 to-orange-950/60 flex items-center justify-center text-orange-500/40">
+                            <i data-lucide="circle-dot" class="w-16 h-16"></i>
+                        </div>
+                        {% endif %}
+                        <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                            <span class="px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold flex items-center gap-1.5">
+                                <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                                مشاهده بزرگ‌تر
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-white text-sm mb-1">{{ item.title }}</h4>
+                        {% if item.description %}
+                        <p class="text-xs text-slate-400">{{ item.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <!-- High quality SVG styled sample cards if no uploaded media yet -->
+                <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-3">
+                    <div class="h-48 rounded-xl bg-gradient-to-br from-court-900 to-slate-900 border border-emerald-500/20 flex items-center justify-center">
+                        <i data-lucide="trophy" class="w-12 h-12 text-emerald-400/80"></i>
+                    </div>
+                    <div class="font-bold text-white text-sm">زمین شماره ۱ (Red Clay VIP)</div>
+                    <div class="text-xs text-slate-400">کف‌پوش خاکی استاندارد با سیستم آبپاشی اتوماتیک</div>
+                </div>
+                <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-3">
+                    <div class="h-48 rounded-xl bg-gradient-to-br from-orange-950 to-slate-900 border border-orange-500/20 flex items-center justify-center">
+                        <i data-lucide="zap" class="w-12 h-12 text-orange-400/80"></i>
+                    </div>
+                    <div class="font-bold text-white text-sm">نورپردازی تخصصی دید در شب</div>
+                    <div class="text-xs text-slate-400">پژواک نور استاندارد بدون ایجاد سایه مزاحم برای بازیکنان</div>
+                </div>
+                <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-3">
+                    <div class="h-48 rounded-xl bg-gradient-to-br from-amber-950 to-slate-900 border border-amber-500/20 flex items-center justify-center">
+                        <i data-lucide="coffee" class="w-12 h-12 text-amber-400/80"></i>
+                    </div>
+                    <div class="font-bold text-white text-sm">کلاب‌هاوس و کافه اختصاصی</div>
+                    <div class="text-xs text-slate-400">محیطی آرامش‌بخش جهت استراحت بازیکنان و همراهان</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT US SECTION -->
+    <section id="about" class="py-16 lg:py-24 bg-slate-950 border-t border-slate-800/80 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+                
+                <div class="lg:col-span-6 space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                        درباره مجموعه
+                    </div>
+
+                    <h2 class="text-3xl sm:text-4xl font-black text-white leading-tight">
+                        {{ config.about_title }}
+                    </h2>
+
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed font-light">
+                        {{ config.about_text }}
+                    </p>
+
+                    <!-- Features Checklist -->
+                    <div class="grid sm:grid-cols-2 gap-4 pt-4">
+                        <div class="flex items-center gap-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-orange-500"></i>
+                            <div>
+                                <div class="text-xs font-bold text-white">زیرسازی استاندارد ITF</div>
+                                <div class="text-[11px] text-slate-400">زهکشی و خاک سرخ درجه یک</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                            <i data-lucide="sun" class="w-6 h-6 text-emerald-400"></i>
+                            <div>
+                                <div class="text-xs font-bold text-white">نورپردازی شبانه LED</div>
+                                <div class="text-[11px] text-slate-400">امکان بازی تا پاسی از شب</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                            <i data-lucide="car" class="w-6 h-6 text-amber-400"></i>
+                            <div>
+                                <div class="text-xs font-bold text-white">پارکینگ اختصاصی</div>
+                                <div class="text-[11px] text-slate-400">همراه با نگهبانی ۲۴ ساعته</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+                            <i data-lucide="coffee" class="w-6 h-6 text-orange-400"></i>
+                            <div>
+                                <div class="text-xs font-bold text-white">کافه و کلاب‌هاوس</div>
+                                <div class="text-[11px] text-slate-400">سرو نوشیدنی‌های ورزشی</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Manager & Contact Highlight Card -->
+                <div class="lg:col-span-6">
+                    <div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-orange-950/40 p-8 border border-orange-500/30 shadow-2xl relative overflow-hidden space-y-6">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl bg-orange-600/20 border border-orange-500/30 flex items-center justify-center text-orange-500 font-black text-xl">
+                                    <i data-lucide="user-check" class="w-7 h-7"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-slate-400">مدیریت کل مجموعه:</div>
+                                    <div class="text-xl font-extrabold text-white text-orange-400">
+                                        جناب آقای {{ config.manager_name }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 text-xs text-slate-300">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="phone" class="w-5 h-5 text-orange-500 shrink-0"></i>
+                                <span>تلفن تماس و رزرو تلفنی: <strong>{{ config.phone_number }}</strong></span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="map-pin" class="w-5 h-5 text-emerald-400 shrink-0"></i>
+                                <span>آدرس مجموعه: {{ config.address }}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="instagram" class="w-5 h-5 text-pink-500 shrink-0"></i>
+                                <span>صفحه اینستاگرام: {{ config.instagram }}</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs text-slate-400 leading-relaxed">
+                            💡 جهت هماهنگی برگزاری مسابقات شرکتی، رزرو‌های سازمانی و یا برنامه‌ریزی تمرینات اختصاصی با تلفن پشتیبانی تماس حاصل فرمایید.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-800 text-slate-400 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-12 gap-8 items-center pb-8 border-b border-slate-800/80">
+                <div class="md:col-span-6 space-y-2">
+                    <a href="#" class="text-2xl font-black text-white tracking-wider flex items-center gap-2">
+                        ROYAL <span class="text-orange-500">COURT</span>
+                    </a>
+                    <p class="text-xs text-slate-400">مجموعه تخصصی تنیس خاکی رویال کورت - ارائه دهنده خدمات رزرو آنلاین و آموزش تنیس</p>
+                </div>
+
+                <div class="md:col-span-6 flex flex-col md:items-end gap-2 text-sm font-semibold">
+                    <!-- PROMINENT FOOTER MANAGER DISPLAY -->
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600/15 border border-orange-500/30 text-orange-400">
+                        <i data-lucide="crown" class="w-4 h-4"></i>
+                        <span>به مدیریت {{ config.manager_name }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs gap-4 text-slate-500">
+                <div>
+                    کلیه حقوق مادی و معنوی متعلق به مجموعه تنیس <strong>Royal Court</strong> می‌باشد.
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/admin/" target="_blank" class="hover:text-orange-400 transition">ورود به پنل ادمین</a>
+                    <span>•</span>
+                    <span>طراحی و اجرا ۱۴۰۳</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- RESERVATION MODAL WITH WARNING -->
+    <div id="reserve-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 relative transform transition-all">
+            <button onclick="closeReserveModal()" class="absolute top-5 left-5 text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-orange-600/20 text-orange-500 flex items-center justify-center">
+                    <i data-lucide="calendar-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">ثبت و رزرو سانس تنیس</h3>
+                    <p class="text-xs text-slate-400">بدون نیاز به ثبت‌نام در وبسایت</p>
+                </div>
+            </div>
+
+            <!-- Slot Info Card -->
+            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                <div class="flex justify-between text-slate-300">
+                    <span>زمین:</span>
+                    <span id="modal-court-name" class="font-bold text-white"></span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                    <span>تاریخ سانس:</span>
+                    <span id="modal-slot-date" class="font-bold text-orange-400"></span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                    <span>زمان سانس:</span>
+                    <span id="modal-slot-time" class="font-bold text-emerald-400"></span>
+                </div>
+                <div class="flex justify-between text-slate-300 pt-2 border-t border-slate-800">
+                    <span>مبلغ قابل پرداخت:</span>
+                    <span id="modal-slot-price" class="font-black text-sm text-white"></span>
+                </div>
+            </div>
+
+            <!-- PROMINENT NON-REFUNDABLE WARNING ALERT -->
+            <div class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs flex items-start gap-3">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-400 shrink-0 mt-0.5 animate-bounce"></i>
+                <div>
+                    <strong class="font-bold text-rose-400 block mb-0.5">هشدار مهم رزرو:</strong>
+                    سانس ثبت شده نهایی بوده و طبق قوانین مجموعه غیرقابل تغییر، لغو یا استرداد وجه می‌باشد. لطفاً قبل از تایید نهایی از ساعت و روز رزرو اطمینان حاصل فرمایید.
+                </div>
+            </div>
+
+            <!-- Inputs Form -->
+            <form id="reserve-form" onsubmit="submitReservation(event)" class="space-y-4">
+                <input type="hidden" id="modal-slot-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">نام و نام خانوادگی رزرو کننده *</label>
+                    <input type="text" id="cust-name" required placeholder="مانند: محمد علوی" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-orange-500 transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">شماره تلفن همراه *</label>
+                    <input type="tel" id="cust-phone" required placeholder="مانند: 09123456789" dir="ltr" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-orange-500 transition text-right">
+                </div>
+
+                <button type="submit" id="reserve-btn" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-sm shadow-xl shadow-orange-600/30 transition flex items-center justify-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    <span>تأیید نهایی و رزرو سانس</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SUCCESS RECEIPT MODAL -->
+    <div id="success-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-6 text-center relative">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            
+            <div>
+                <h3 class="text-2xl font-black text-white">رزرو شما با موفقیت ثبت شد!</h3>
+                <p class="text-xs text-slate-400 mt-1">اطلاعات سانس شما در سیستم رویال کورت به ثبت رسید.</p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs text-right">
+                <div class="flex justify-between">
+                    <span class="text-slate-400">کد پیگیری رزرو:</span>
+                    <span id="receipt-code" class="font-extrabold text-orange-400 text-sm"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">رزرو کننده:</span>
+                    <span id="receipt-name" class="font-bold text-white"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">زمین و سانس:</span>
+                    <span id="receipt-slot" class="font-bold text-emerald-400"></span>
+                </div>
+            </div>
+
+            <button onclick="closeSuccessModal()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition">
+                متوجه شدم (بستن)
+            </button>
+        </div>
+    </div>
+
+    <!-- CLASS ENROLLMENT MODAL -->
+    <div id="class-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-6 relative">
+            <button onclick="closeClassModal()" class="absolute top-5 left-5 text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-orange-600/20 text-orange-500 flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">پیش‌ثبت‌نام کلاس آموزشی</h3>
+                    <p class="text-xs text-slate-400" id="class-modal-title"></p>
+                </div>
+            </div>
+
+            <form id="class-form" onsubmit="submitClassEnrollment(event)" class="space-y-4">
+                <input type="hidden" id="class-modal-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">نام و نام خانوادگی *</label>
+                    <input type="text" id="class-cust-name" required placeholder="مثال: علی احمدی" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-orange-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">شماره تماس *</label>
+                    <input type="tel" id="class-cust-phone" required placeholder="09121112233" dir="ltr" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs text-right focus:outline-none focus:border-orange-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">توضیحات تکمیلی (اختیاری)</label>
+                    <textarea id="class-cust-notes" rows="2" placeholder="سابقه بازی تنیس، زمان‌های پیشنهادی..." class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-orange-500"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs shadow-xl transition">
+                    ثبت درخواست و هماهنگی
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        // Lucide Icons Render
+        lucide.createIcons();
+
+        // Global State
+        let allSlots = [];
+        let selectedCourt = 'all';
+        let selectedDate = '';
+
+        // Initialize Theme from LocalStorage or default dark
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon-dark').classList.remove('hidden');
+                document.getElementById('theme-icon-light').classList.add('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon-dark').classList.add('hidden');
+                document.getElementById('theme-icon-light').classList.remove('hidden');
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('theme-icon-dark').classList.remove('hidden');
+                document.getElementById('theme-icon-light').classList.add('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('theme-icon-dark').classList.add('hidden');
+                document.getElementById('theme-icon-light').classList.remove('hidden');
+            }
+        }
+
+        // --- 3D TENNIS BALL INTRO ANIMATION ---
+        let scene, camera, renderer, tennisBall, particles;
+
+        function init3DTennisBall() {
+            const container = document.getElementById('intro-canvas');
+            if (!container) return;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xea580c, 2.5, 50);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
+
+            // Tennis Ball Geometry & Material
+            const ballGeo = new THREE.SphereGeometry(1.2, 64, 64);
+            const ballMat = new THREE.MeshStandardMaterial({
+                color: 0xccff00, // Optic Yellow Tennis Color
+                roughness: 0.6,
+                metalness: 0.1
+            });
+            tennisBall = new THREE.Mesh(ballGeo, ballMat);
+            scene.add(tennisBall);
+
+            // Tennis Seam White Rings
+            const ringGeo = new THREE.TorusGeometry(1.21, 0.04, 16, 100);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const ring1 = new THREE.Mesh(ringGeo, ringMat);
+            ring1.rotation.x = Math.PI / 4;
+            tennisBall.add(ring1);
+
+            // Clay Dust Particle Trail
+            const particleCount = 150;
+            const pGeo = new THREE.BufferGeometry();
+            const pPositions = new Float32Array(particleCount * 3);
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                pPositions[i] = (Math.random() - 0.5) * 10;
+                pPositions[i + 1] = (Math.random() - 0.5) * 10;
+                pPositions[i + 2] = (Math.random() - 0.5) * 10;
+            }
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+            const pMat = new THREE.PointsMaterial({ color: 0xea580c, size: 0.05, transparent: true, opacity: 0.8 });
+            particles = new THREE.Points(pGeo, pMat);
+            scene.add(particles);
+
+            // GSAP Entrance Swoosh Sequence
+            tennisBall.position.set(-8, 3, -10);
+            tennisBall.rotation.set(0, 0, 0);
+
+            gsap.to(tennisBall.position, {
+                x: 0,
+                y: 0,
+                z: 0,
+                duration: 1.8,
+                ease: "power3.out",
+            });
+
+            gsap.to(tennisBall.rotation, {
+                x: Math.PI * 6,
+                y: Math.PI * 4,
+                duration: 2.2,
+                ease: "power2.out"
+            });
+
+            // Animate Loop
+            function animate() {
+                requestAnimationFrame(animate);
+                if (tennisBall) {
+                    tennisBall.rotation.y += 0.01;
+                }
+                if (particles) {
+                    particles.rotation.y += 0.002;
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Auto fade out intro after 2.5s
+            setTimeout(() => {
+                skipIntro();
+            }, 2500);
+        }
+
+        function skipIntro() {
+            const overlay = document.getElementById('intro-overlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 800);
+            }
+        }
+
+        function playIntroAnimation() {
+            const overlay = document.getElementById('intro-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                overlay.style.opacity = '1';
+                init3DTennisBall();
+            }
+        }
+
+        // --- FETCH & RENDER SLOTS ---
+        async function fetchSlots() {
+            try {
+                const res = await fetch('/api/slots/');
+                const data = await res.json();
+                if (data.success) {
+                    allSlots = data.slots;
+                    buildDateTabs();
+                    renderSlots();
+                }
+            } catch (e) {
+                console.error("Error fetching slots:", e);
+            }
+        }
+
+        function buildDateTabs() {
+            const dates = [...new Set(allSlots.map(s => s.jalali_date))];
+            const container = document.getElementById('date-tabs-container');
+            if (!container) return;
+
+            if (dates.length === 0) return;
+            if (!selectedDate) selectedDate = dates[0];
+
+            container.innerHTML = dates.map(d => {
+                const isActive = d === selectedDate;
+                const activeClass = isActive 
+                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/30 font-bold border-orange-500' 
+                    : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800 font-medium';
+                
+                return `
+                    <button onclick="selectDate('${d}')" class="px-5 py-3 rounded-2xl text-xs whitespace-nowrap transition border ${activeClass} flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                        <span>${d}</span>
+                    </button>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function selectDate(d) {
+            selectedDate = d;
+            buildDateTabs();
+            renderSlots();
+        }
+
+        function filterByCourt(courtId) {
+            selectedCourt = courtId;
+            document.querySelectorAll('.court-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-orange-600', 'text-white', 'shadow');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+
+            const activeBtn = document.getElementById(`court-btn-${courtId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+                activeBtn.classList.add('bg-orange-600', 'text-white', 'shadow');
+            }
+
+            renderSlots();
+        }
+
+        function renderSlots() {
+            const grid = document.getElementById('slots-grid');
+            const noSlotsMsg = document.getElementById('no-slots-msg');
+            if (!grid) return;
+
+            let filtered = allSlots.filter(s => s.jalali_date === selectedDate);
+            if (selectedCourt !== 'all') {
+                filtered = filtered.filter(s => s.court_id == selectedCourt);
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noSlotsMsg.classList.remove('hidden');
+                return;
+            } else {
+                noSlotsMsg.classList.add('hidden');
+            }
+
+            grid.innerHTML = filtered.map(slot => {
+                const isBooked = slot.is_booked;
+                const isBlocked = slot.is_blocked;
+                
+                let statusBadge = `
+                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[11px] font-bold flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        آزاد (قابل رزرو)
+                    </span>`;
+                
+                if (isBooked) {
+                    statusBadge = `
+                        <span class="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-400 text-[11px] font-bold flex items-center gap-1">
+                            <i data-lucide="lock" class="w-3 h-3"></i>
+                            رزرو شده
+                        </span>`;
+                } else if (isBlocked) {
+                    statusBadge = `
+                        <span class="px-2.5 py-1 rounded-full bg-slate-700 text-slate-400 text-[11px] font-semibold">
+                            غیرقابل دسترس
+                        </span>`;
+                }
+
+                const priceFormatted = slot.price.toLocaleString('fa-IR');
+                const finalPriceFormatted = slot.final_price.toLocaleString('fa-IR');
+
+                return `
+                    <div class="rounded-3xl bg-slate-900 border ${isBooked ? 'border-rose-950/60 opacity-85' : 'border-slate-800 hover:border-orange-500/50'} p-6 transition duration-300 shadow-xl space-y-5 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-orange-500"></i>
+                                    ${slot.court_name}
+                                </div>
+                                ${statusBadge}
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-slate-200 font-extrabold text-base">
+                                    <i data-lucide="clock" class="w-4 h-4 text-orange-400"></i>
+                                    <span>${slot.start_time} الی ${slot.end_time}</span>
+                                </div>
+                                ${slot.discount_percent > 0 ? `<span class="px-2 py-0.5 rounded-lg bg-orange-600 text-white text-[10px] font-black">%${slot.discount_percent} تخفیف</span>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-4">
+                            <div>
+                                ${slot.discount_percent > 0 ? `<div class="text-[10px] text-slate-500 line-through">${priceFormatted} تومان</div>` : ''}
+                                <div class="text-base font-black text-white">
+                                    ${finalPriceFormatted} <span class="text-[10px] font-normal text-slate-400">تومان</span>
+                                </div>
+                            </div>
+
+                            ${isBooked || isBlocked ? `
+                                <button disabled class="px-5 py-2.5 rounded-xl bg-slate-800 text-slate-500 text-xs font-semibold cursor-not-allowed border border-slate-700/50">
+                                    رزرو شده
+                                </button>
+                            ` : `
+                                <button onclick="openReserveModal(${slot.id}, '${slot.court_name}', '${slot.jalali_date}', '${slot.start_time} تا ${slot.end_time}', '${finalPriceFormatted}', ${slot.discount_percent})" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white text-xs font-bold shadow-lg shadow-orange-600/20 transition">
+                                    رزرو سانس
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // --- MODAL CONTROLS & API CALLS ---
+        function openReserveModal(slotId, courtName, dateStr, timeStr, price, disc) {
+            document.getElementById('modal-slot-id').value = slotId;
+            document.getElementById('modal-court-name').innerText = courtName;
+            document.getElementById('modal-slot-date').innerText = dateStr;
+            document.getElementById('modal-slot-time').innerText = timeStr;
+            document.getElementById('modal-slot-price').innerText = `${price} تومان`;
+
+            const modal = document.getElementById('reserve-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeReserveModal() {
+            const modal = document.getElementById('reserve-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function submitReservation(e) {
+            e.preventDefault();
+            const slotId = document.getElementById('modal-slot-id').value;
+            const fullName = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const btn = document.getElementById('reserve-btn');
+
+            if (!fullName || !phone) {
+                alert('لطفاً نام و شماره تماس خود را وارد نمایید.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> در حال ثبت رزرو...`;
+            lucide.createIcons();
+
+            try {
+                const res = await fetch('/api/reserve/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slot_id: slotId, full_name: fullName, phone_number: phone })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    closeReserveModal();
+                    
+                    // Show Receipt
+                    document.getElementById('receipt-code').innerText = data.tracking_code;
+                    document.getElementById('receipt-name').innerText = data.slot_info.full_name;
+                    document.getElementById('receipt-slot').innerText = `${data.slot_info.court_name} - ${data.slot_info.time}`;
+
+                    const successModal = document.getElementById('success-modal');
+                    successModal.classList.remove('hidden');
+                    successModal.classList.add('flex');
+
+                    // Reset form & Refresh slots live
+                    document.getElementById('reserve-form').reset();
+                    await fetchSlots();
+                } else {
+                    alert(data.message || 'خطا در ثبت رزرو');
+                }
+            } catch (err) {
+                alert('ارتباط با سرور برقرار نشد.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> <span>تأیید نهایی و رزرو سانس</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('success-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // CLASS ENROLLMENT MODAL
+        function openClassModal(classId, classTitle, tuition) {
+            document.getElementById('class-modal-id').value = classId;
+            document.getElementById('class-modal-title').innerText = `${classTitle} (شهریه: ${tuition} تومان)`;
+            
+            const modal = document.getElementById('class-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeClassModal() {
+            const modal = document.getElementById('class-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function submitClassEnrollment(e) {
+            e.preventDefault();
+            const classId = document.getElementById('class-modal-id').value;
+            const fullName = document.getElementById('class-cust-name').value.trim();
+            const phone = document.getElementById('class-cust-phone').value.trim();
+            const notes = document.getElementById('class-cust-notes').value.trim();
+
+            try {
+                const res = await fetch('/api/enroll/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ class_id: classId, full_name: fullName, phone_number: phone, notes: notes })
+                });
+
+                const data = await res.json();
+                alert(data.message);
+                if (data.success) {
+                    closeClassModal();
+                    document.getElementById('class-form').reset();
+                }
+            } catch (err) {
+                alert('خطا در برقراری ارتباط با سرور.');
+            }
+        }
+
+        // GALLERY CATEGORY FILTER
+        function filterGallery(catId) {
+            const items = document.querySelectorAll('.gallery-item');
+            items.forEach(item => {
+                if (catId === 'all' || item.dataset.category === catId) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // ON LOAD INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            init3DTennisBall();
+            fetchSlots();
+        });
+    </script>
+</body>
+</html>
