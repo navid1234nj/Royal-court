@@ -6,15 +6,18 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.utils import timezone
+from django.db import transaction
 from .models import (
     SiteSetting, HeroSlide, TennisCourt, CourtSlot,
     Reservation, GalleryCategory, GalleryItem,
     TrainingClass, ClassEnrollment
 )
 
+
 def get_site_config():
     config, created = SiteSetting.objects.get_or_create(id=1)
     return config
+
 
 def index(request):
     config = get_site_config()
@@ -45,12 +48,18 @@ def api_get_slots(request):
     date_str = request.GET.get('date')
 
     slots_qs = CourtSlot.objects.all().order_by('date', 'start_time')
+
     if court_id and court_id != 'all':
         slots_qs = slots_qs.filter(court_id=court_id)
+
     if date_str:
-        slots_qs = slots_qs.filter(jalali_date__icontains=date_str) | slots_qs.filter(date=date_str)
+        slots_qs = (
+            slots_qs.filter(jalali_date__icontains=date_str)
+            | slots_qs.filter(date=date_str)
+        )
 
     data = []
+
     for slot in slots_qs:
         data.append({
             'id': slot.id,
@@ -66,7 +75,11 @@ def api_get_slots(request):
             'is_booked': slot.is_booked,
             'is_blocked': slot.is_blocked,
         })
-    return JsonResponse({'success': True, 'slots': data})
+
+    return JsonResponse({
+        'success': True,
+        'slots': data
+    })
 
 
 @csrf_exempt
@@ -82,47 +95,70 @@ def api_reserve_slot(request):
     phone_number = data.get('phone_number', '').strip()
 
     if not slot_id or not full_name or not phone_number:
-        return JsonResponse({'success': False, 'message': 'لطفاً تمامی اطلاعات (نام و شماره تماس) را وارد نمایید.'}, status=400)
+        return JsonResponse({
+            'success': False,
+            'message': 'لطفاً تمامی اطلاعات (نام و شماره تماس) را وارد نمایید.'
+        }, status=400)
 
     try:
-        slot = CourtSlot.objects.select_for_update().get(id=slot_id)
+        with transaction.atomic():
+            slot = (
+                CourtSlot.objects
+                .select_for_update()
+                .get(id=slot_id)
+            )
+
+            if slot.is_booked:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'متاسفانه این سانس قبلاً رزرو شده است.'
+                }, status=400)
+
+            if slot.is_blocked:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'این سانس غیرقابل رزرو می‌باشد.'
+                }, status=400)
+
+            # Generate tracking code
+            code_suffix = ''.join(
+                random.choices(string.digits, k=5)
+            )
+            tracking_code = f"RC-{code_suffix}"
+
+            slot.is_booked = True
+            slot.save(update_fields=['is_booked'])
+
+            reservation = Reservation.objects.create(
+                slot=slot,
+                full_name=full_name,
+                phone_number=phone_number,
+                tracking_code=tracking_code,
+                is_confirmed=True
+            )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'رزرو شما با موفقیت در سیستم ثبت گردید.',
+            'tracking_code': tracking_code,
+            'slot_info': {
+                'court_name': slot.court.name,
+                'jalali_date': slot.jalali_date,
+                'time': (
+                    f"{slot.start_time.strftime('%H:%M')} "
+                    f"تا {slot.end_time.strftime('%H:%M')}"
+                ),
+                'price': f"{slot.final_price:,} تومان",
+                'full_name': full_name,
+                'phone_number': phone_number
+            }
+        })
+
     except CourtSlot.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'سانس مورد نظر یافت نشد.'}, status=404)
-
-    if slot.is_booked:
-        return JsonResponse({'success': False, 'message': 'متاسفانه این سانس قبلاً رزرو شده است.'}, status=400)
-
-    if slot.is_blocked:
-        return JsonResponse({'success': False, 'message': 'این سانس غیرقابل رزرو می‌باشد.'}, status=400)
-
-    # Generate tracking code
-    code_suffix = ''.join(random.choices(string.digits, k=5))
-    tracking_code = f"RC-{code_suffix}"
-
-    slot.is_booked = True
-    slot.save()
-
-    reservation = Reservation.objects.create(
-        slot=slot,
-        full_name=full_name,
-        phone_number=phone_number,
-        tracking_code=tracking_code,
-        is_confirmed=True
-    )
-
-    return JsonResponse({
-        'success': True,
-        'message': 'رزرو شما با موفقیت در سیستم ثبت گردید.',
-        'tracking_code': tracking_code,
-        'slot_info': {
-            'court_name': slot.court.name,
-            'jalali_date': slot.jalali_date,
-            'time': f"{slot.start_time.strftime('%H:%M')} تا {slot.end_time.strftime('%H:%M')}",
-            'price': f"{slot.final_price:,} تومان",
-            'full_name': full_name,
-            'phone_number': phone_number
-        }
-    })
+        return JsonResponse({
+            'success': False,
+            'message': 'سانس مورد نظر یافت نشد.'
+        }, status=404)
 
 
 @csrf_exempt
@@ -139,12 +175,18 @@ def api_enroll_class(request):
     notes = data.get('notes', '').strip()
 
     if not class_id or not full_name or not phone_number:
-        return JsonResponse({'success': False, 'message': 'لطفاً تمامی فیلدهای اجباری را تکمیل کنید.'}, status=400)
+        return JsonResponse({
+            'success': False,
+            'message': 'لطفاً تمامی فیلدهای اجباری را تکمیل کنید.'
+        }, status=400)
 
     try:
         t_class = TrainingClass.objects.get(id=class_id)
     except TrainingClass.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'کلاس مورد نظر یافت نشد.'}, status=404)
+        return JsonResponse({
+            'success': False,
+            'message': 'کلاس مورد نظر یافت نشد.'
+        }, status=404)
 
     ClassEnrollment.objects.create(
         training_class=t_class,
@@ -155,6 +197,8 @@ def api_enroll_class(request):
 
     return JsonResponse({
         'success': True,
-        'message': f'ثبت‌نام اولیه شما در {t_class.title} با موفقیت انجام شد. کارشناسان ما جهت هماهنگی نهایی با شما تماس خواهند گرفت.'
+        'message': (
+            f'ثبت‌نام اولیه شما در {t_class.title} با موفقیت انجام شد. '
+            'کارشناسان ما جهت هماهنگی نهایی با شما تماس خواهند گرفت.'
+        )
     })
-
